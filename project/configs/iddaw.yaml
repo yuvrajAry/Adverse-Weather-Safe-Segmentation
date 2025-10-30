@@ -1,0 +1,29 @@
+data_root: IDDAW
+splits_dir: project/splits
+output_dir: project/ckpts
+
+split:
+  train: 0.8
+  val: 0.1
+  test: 0.1
+  seed: 42
+
+train:
+  image_size: 512
+  batch_size: 4
+  workers: 0
+  epochs: 50
+  lr: 0.001
+  amp: false
+
+variants:
+  - modality: rgb
+    backbone: mbv3
+  - modality: nir
+    backbone: fastscnn
+  - modality: early4
+    backbone: mbv3
+  - modality: mid
+    backbone: mbv3
+
+

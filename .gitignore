@@ -1,0 +1,125 @@
+# Dataset
+IDDAW/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# PyTorch
+*.pt
+*.pth
+*.ckpt
+!project/ckpts/*.pt
+!full4/checkpoints/*.pt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+._.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Frontend Build
+frontend/dist/
+frontend/build/
+frontend/.builder/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and Results
+project/uploads/
+project/results/
+project/output*/
+
+# Logs
+*.log
+logs/
+ensemble_log.txt
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Test Outputs
+test_*.png
+test_*.jpg
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Documentation Builds
+docs/_build/
+site/
+
+# Model Outputs
+outputs/
+checkpoints/
+!project/ckpts/
+!full4/checkpoints/
+
+# Dataset (too large for git)
+IDDAW/train/
+IDDAW/val/
+
+# Reports
+*.docx
+*.pdf
+!docs/*.pdf
+
+# Cache
+.cache/
+*.cache
