@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
-  root: resolve(__dirname),
+  root: resolve(__dirname, 'client'),
   server: {
     port: 5173,
     fs: {
@@ -30,9 +30,6 @@ export default defineConfig({
     ],
   },
   build: {
-    outDir: 'dist/spa',
-    rollupOptions: {
-      input: resolve(__dirname, 'client/index.html'),
-    },
+    outDir: resolve(__dirname, 'dist/spa'),
   },
 })
