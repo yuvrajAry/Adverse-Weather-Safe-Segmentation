@@ -330,6 +330,31 @@ def require_auth(f):
     return decorated_function
 
 # API Routes
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint with API documentation"""
+    return jsonify({
+        'message': 'IDDAW Backend API Server',
+        'version': '1.0.0',
+        'status': 'running',
+        'endpoints': {
+            'health': 'GET /api/ping',
+            'auth': {
+                'signup': 'POST /api/auth/signup',
+                'login': 'POST /api/auth/login',
+                'check': 'GET /api/auth/check',
+                'me': 'GET /api/me'
+            },
+            'prediction': {
+                'predict': 'POST /api/predict',
+                'results': 'GET /api/results',
+                'result': 'GET /api/results/<id>',
+                'result_image': 'GET /api/results/<id>/<filename>'
+            }
+        },
+        'documentation': 'See API endpoints above for available routes'
+    })
+
 @app.route('/api/ping', methods=['GET'])
 def ping():
     """Health check endpoint"""
