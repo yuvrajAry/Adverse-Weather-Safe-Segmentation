@@ -21,11 +21,12 @@ iddaw.db
 *.sqlite
 *.sqlite3
 
-# Model Checkpoints
-ckpts/*.pth
-ckpts/*.pt
+# Model Checkpoints (allow ckpts/ folder for deployment)
+# ckpts/*.pth
+# ckpts/*.pt
 *.pth
-*.pt
+# Keep checkpoint files for deployment
+!ckpts/*.pt
 
 # Uploads and outputs
 uploads/
