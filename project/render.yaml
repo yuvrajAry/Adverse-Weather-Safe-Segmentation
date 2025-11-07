@@ -15,3 +15,18 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
+
+  - type: web
+    name: iddaw-frontend
+    env: static
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: frontend
+    buildCommand: npm install && npm run build:client
+    staticPublishPath: dist/spa
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://adverse-weather-safe-segmentation.onrender.com
+      - key: VITE_USE_MOCKS
+        value: "false"
