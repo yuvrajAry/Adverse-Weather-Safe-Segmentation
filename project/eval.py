@@ -37,7 +37,7 @@ def main():
 
 	variant = f"{args.modality}_{args.backbone}" if args.modality != "mid" else "mid_mbv3"
 	model = build_model(variant, num_classes=len(lbl.id_to_class)).to(device)
-	state = torch.load(args.ckpt, map_location=device)
+	state = torch.load(args.ckpt, map_location=device, weights_only=True)
 	model.load_state_dict(state["model"])
 	model.eval()
 

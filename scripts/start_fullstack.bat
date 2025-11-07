@@ -4,13 +4,13 @@ echo ====================================
 echo.
 
 echo Starting Backend API Server...
-start "IDDAW Backend" cmd /k "cd /d \"%~dp0..\project\" && python start_backend.py"
+start "IDDAW Backend" cmd /k "cd /d \"D:\iddaw\pro\project\" && python start_backend.py"
 
 echo Waiting for backend to start...
 timeout /t 5 /nobreak > nul
 
 echo Starting Frontend Development Server...
-start "IDDAW Frontend" cmd /k "cd /d \"%~dp0..\frontend\" && npm run dev"
+start "IDDAW Frontend" cmd /k "cd /d \"D:\iddaw\pro\frontend\" && npm run dev"
 
 echo.
 echo Both servers are starting...

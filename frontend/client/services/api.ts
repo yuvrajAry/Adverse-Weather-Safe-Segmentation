@@ -3,7 +3,7 @@ import type { AuthResponse, PredictResult, ResultDetail, ResultSummary, User } f
 import { mocks } from "@/services/mocks";
 import { useAuthStore } from "@/store/auth";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8001" : window.location.origin);
+const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.DEV ? "http://localhost:8002" : window.location.origin;
 const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS ?? "false") === "true";
 
 // Debug logging

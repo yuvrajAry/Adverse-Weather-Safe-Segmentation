@@ -36,7 +36,7 @@ from metrics import entropy_map
 from viz import color_map, overlay_segmentation, safety_heatmap, confidence_heatmap
 
 class ModelManager:
-    def __init__(self, model_path: str = 'ckpts/fast_scnn_early_latest.pt'):
+    def __init__(self, model_path: str = 'ckpts/best_mid_mbv3.pt'):
         self.model_path = model_path
         self.model = None
         self.label_mapper = LabelMapper.default()
@@ -97,9 +97,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 CORS(app, resources={
     r"/*": {
         "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
-        "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-        "expose_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
     }
 })
@@ -294,15 +293,6 @@ def require_auth(f):
     """Decorator to require authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Allow CORS preflight requests to pass without authentication
-        if request.method == 'OPTIONS':
-            resp = jsonify({'status': 'ok'})
-            resp.headers['Access-Control-Allow-Origin'] = '*'
-            resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE'
-            resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
-            resp.headers['Access-Control-Max-Age'] = '3600'
-            return resp, 200
-
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
         if not token:
             return jsonify({'error': 'No token provided'}), 401
@@ -459,19 +449,10 @@ def handle_exception(e):
     traceback.print_exc()
     return jsonify({'error': str(e)}), 500
 
-@app.route('/api/predict', methods=['POST', 'OPTIONS'])
+@app.route('/api/predict', methods=['POST'])
 @require_auth
 def predict():
     """Image segmentation prediction endpoint"""
-    # Handle preflight OPTIONS request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
-        response.headers['Access-Control-Max-Age'] = '3600'
-        return response
-        
     try:
         print("\n=== New Prediction Request ===")
         print("Content-Type:", request.content_type)
@@ -540,12 +521,6 @@ def predict():
         # Process images
         result_id = str(uuid.uuid4())
         result_urls = process_images(rgb_path, nir_path, result_id)
-
-        # Include token in image URLs so frontend <img> can access without headers
-        req_token = request.headers.get('Authorization', '').replace('Bearer ', '')
-        if req_token:
-            for k in list(result_urls.keys()):
-                result_urls[k] = f"{result_urls[k]}?token={req_token}"
         
         # Save result to database
         conn = sqlite3.connect('iddaw.db')
@@ -802,15 +777,6 @@ def process_images(rgb_path: str, nir_path: str, result_id: str, model_manager: 
             # Convert to BGR for saving (cv2.imwrite expects BGR)
             rgb_vis_bgr = cv2.cvtColor(rgb_vis, cv2.COLOR_RGB2BGR)
             overlay_vis_bgr = cv2.cvtColor(overlay_vis, cv2.COLOR_RGB2BGR)
-            safety_vis_bgr = cv2.cvtColor(safety_vis, cv2.COLOR_RGB2BGR)
-            conf_vis_bgr = cv2.cvtColor(conf_vis, cv2.COLOR_RGB2BGR)
-            
-            # Save images
-            cv2.imwrite(str(results_dir / 'original.png'), rgb_vis_bgr)
-            cv2.imwrite(str(results_dir / 'mask.png'), mask_vis)  # Mask is already in correct format
-            cv2.imwrite(str(results_dir / 'overlay.png'), overlay_vis_bgr)
-            cv2.imwrite(str(results_dir / 'safety.png'), safety_vis_bgr)
-            cv2.imwrite(str(results_dir / 'confidence.png'), conf_vis_bgr)
             
         except Exception as e:
             print(f"Error during visualization generation: {str(e)}")
@@ -822,54 +788,55 @@ def process_images(rgb_path: str, nir_path: str, result_id: str, model_manager: 
         import traceback
         traceback.print_exc()
         raise
+    safety_vis_bgr = cv2.cvtColor(safety_vis, cv2.COLOR_RGB2BGR)
+    conf_vis_bgr = cv2.cvtColor(conf_vis, cv2.COLOR_RGB2BGR)
+    
+    # Save images
+    cv2.imwrite(str(results_dir / 'original.png'), rgb_vis_bgr)
+    cv2.imwrite(str(results_dir / 'mask.png'), mask_vis)  # Mask is already in correct format
+    cv2.imwrite(str(results_dir / 'overlay.png'), overlay_vis_bgr)
+    cv2.imwrite(str(results_dir / 'safety.png'), safety_vis_bgr)
+    cv2.imwrite(str(results_dir / 'confidence.png'), conf_vis_bgr)
     
     # Return absolute URLs for the results
     base_url = f"/api/results/{result_id}"
     return {
         'id': result_id,
-        'original': f"{base_url}/original.png",
-        'mask': f"{base_url}/mask.png", 
-        'overlay': f"{base_url}/overlay.png",
-        'heatmap': f"{base_url}/safety.png",
-        'confidence': f"{base_url}/confidence.png"
+        'originalUrl': f"{base_url}/original.png",
+        'maskUrl': f"{base_url}/mask.png", 
+        'overlayUrl': f"{base_url}/overlay.png",
+        'heatmapUrl': f"{base_url}/safety.png",
+        'confidenceUrl': f"{base_url}/confidence.png",
+        'createdAt': datetime.utcnow().isoformat()
     }
 
 @app.route('/api/results/<result_id>/<filename>')
+@require_auth
 def get_result_image(result_id: str, filename: str):
-    """Serve result images with token in query to support cross-origin <img> loads"""
-    # Accept token from query or header for flexibility
-    token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
-    if not token:
-        return jsonify({'error': 'No token provided'}), 401
-
-    user_id = verify_token(token)
-    if not user_id:
-        return jsonify({'error': 'Invalid token'}), 401
-
+    """Serve result images"""
     # Verify user owns this result
     conn = sqlite3.connect('iddaw.db')
     cursor = conn.cursor()
-
+    
     cursor.execute(
         'SELECT id FROM results WHERE id = ? AND user_id = ?',
-        (result_id, user_id)
+        (result_id, request.user_id)
     )
-
+    
     if not cursor.fetchone():
         conn.close()
         return jsonify({'error': 'Result not found'}), 404
-
+    
     conn.close()
-
+    
     # Serve file
     file_path = Path(app.config['RESULTS_FOLDER']) / result_id / filename
     if file_path.exists():
         response = send_file(str(file_path), mimetype='image/png')
-        # Explicitly set permissive cross-origin resource headers to avoid ORB
+        # Add CORS headers
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type, X-Requested-With'
-        response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+        response.headers['Access-Control-Allow-Headers'] = 'Authorization'
         return response
     return jsonify({'error': 'Image not found'}), 404
 
@@ -886,16 +853,10 @@ def list_results():
     )
     
     results = []
-    req_token = request.headers.get('Authorization', '').replace('Bearer ', '')
     for row in cursor.fetchall():
-        thumb = row[1]
-        if req_token and ('?token=' not in thumb and '&token=' not in thumb):
-            # Append token for safe cross-origin thumbnail loading
-            sep = '?' if ('?' not in thumb) else '&'
-            thumb = f"{thumb}{sep}token={req_token}"
         results.append({
             'id': row[0],
-            'thumbnailUrl': thumb,
+            'thumbnailUrl': row[1],
             'createdAt': row[2]
         })
     
@@ -919,23 +880,13 @@ def get_result(result_id: str):
     
     if not result:
         return jsonify({'error': 'Result not found'}), 404
-
-    req_token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    # Safely append token to each URL if missing
-    def add_token(url: str) -> str:
-        if not req_token:
-            return url
-        if ('?token=' in url) or ('&token=' in url):
-            return url
-        sep = '?' if ('?' not in url) else '&'
-        return f"{url}{sep}token={req_token}"
-
+    
     return jsonify({
         'id': result[0],
-        'originalUrl': add_token(result[1]),
-        'maskUrl': add_token(result[2]),
-        'heatmapUrl': add_token(result[3]),
-        'overlayUrl': add_token(result[4]),
+        'originalUrl': result[1],
+        'maskUrl': result[2],
+        'heatmapUrl': result[3],
+        'overlayUrl': result[4],
         'createdAt': result[5]
     })
 
