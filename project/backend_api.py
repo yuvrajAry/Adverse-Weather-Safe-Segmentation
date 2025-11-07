@@ -45,13 +45,17 @@ class ModelManager:
 
     def load_model(self):
         try:
-            self.model = build_model('FastSCNN')
+            # Get number of classes from label mapper
+            num_classes = len(self.label_mapper.class_to_id)
+            # Build model with correct architecture for mid-fusion checkpoint
+            self.model = build_model('mid_mbv3', num_classes=num_classes)
             if os.path.exists(self.model_path):
                 checkpoint = torch.load(self.model_path, map_location=self.device)
                 self.model.load_state_dict(checkpoint['model_state_dict'])
                 self.model.to(self.device)
                 self.model.eval()
                 print(f"Model loaded successfully from {self.model_path}")
+                print(f"Model architecture: mid_mbv3, Classes: {num_classes}")
             else:
                 print(f"Warning: Model checkpoint not found at {self.model_path}")
         except Exception as e:

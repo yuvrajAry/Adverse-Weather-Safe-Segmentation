@@ -41,7 +41,18 @@ if __name__ == '__main__':
         # Get port from environment or default to 8001
         port = int(os.environ.get('PORT', 8001))
         debug = os.environ.get('FLASK_ENV', 'development') == 'development'
-        app.run(host='0.0.0.0', port=port, debug=debug)
+        
+        # Use production server if available (Render sets FLASK_ENV=production)
+        if not debug:
+            try:
+                from waitress import serve
+                print(f"Starting production server on port {port}...")
+                serve(app, host='0.0.0.0', port=port, threads=4)
+            except ImportError:
+                print("Waitress not available, using development server")
+                app.run(host='0.0.0.0', port=port, debug=False)
+        else:
+            app.run(host='0.0.0.0', port=port, debug=debug)
         
     except ImportError as e:
         print(f"Import error: {e}")
