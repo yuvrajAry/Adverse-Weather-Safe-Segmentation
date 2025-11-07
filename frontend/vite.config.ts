@@ -11,11 +11,17 @@ export default defineConfig({
   plugins: [react()],
   root: __dirname, // frontend directory (matches tsconfig baseUrl: ".")
   resolve: {
-    alias: {
-      // Match tsconfig paths exactly: "@/*": ["./client/*"]
-      '@': path.resolve(__dirname, 'client'),
-      '@shared': path.resolve(__dirname, 'shared'),
-    },
+    alias: [
+      {
+        find: /^@\/(.*)$/,
+        replacement: path.resolve(__dirname, 'client') + '/$1',
+      },
+      {
+        find: '@shared',
+        replacement: path.resolve(__dirname, 'shared'),
+      },
+    ],
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   build: {
     outDir: path.resolve(__dirname, 'dist/spa'),
