@@ -14,7 +14,9 @@ sys.path.insert(0, str(project_dir))
 
 # Set environment variables
 os.environ.setdefault('SECRET_KEY', 'iddaw-secret-key-change-in-production')
-os.environ.setdefault('FLASK_ENV', 'development')
+# Don't override FLASK_ENV if already set by hosting platform
+if 'FLASK_ENV' not in os.environ:
+    os.environ['FLASK_ENV'] = 'production'
 
 # Import and run the backend
 if __name__ == '__main__':
@@ -25,10 +27,15 @@ if __name__ == '__main__':
         print("=" * 50)
         print(f"Project directory: {project_dir}")
         print(f"Device: {model_manager.device}")
+        # Get port from environment or default to 8001
+        port = int(os.environ.get('PORT', 8001))
+        debug = os.environ.get('FLASK_ENV', 'development') == 'development'
+        
         print("Initializing database...")
         init_db()
         print("Database initialized successfully")
-        print("Starting server on http://localhost:8000")
+        print(f"Starting server on 0.0.0.0:{port}")
+        print(f"Environment: {'development' if debug else 'production'}")
         print("API Documentation:")
         print("  POST /api/auth/signup - User registration")
         print("  POST /api/auth/login - User login")
@@ -37,22 +44,24 @@ if __name__ == '__main__':
         print("  GET  /api/results - List user results")
         print("  GET  /api/results/<id> - Get specific result")
         print("=" * 50)
-        
-        # Get port from environment or default to 8001
-        port = int(os.environ.get('PORT', 8001))
-        debug = os.environ.get('FLASK_ENV', 'development') == 'development'
+        print(f"Attempting to start server...")
+        sys.stdout.flush()  # Force output to appear immediately
         
         # Use production server if available (Render sets FLASK_ENV=production)
         if not debug:
             try:
                 from waitress import serve
-                print(f"Starting production server on port {port}...")
+                print(f"Starting Waitress production server on 0.0.0.0:{port}...")
+                sys.stdout.flush()
                 serve(app, host='0.0.0.0', port=port, threads=4)
             except ImportError:
-                print("Waitress not available, using development server")
-                app.run(host='0.0.0.0', port=port, debug=False)
+                print("Waitress not available, using Flask development server")
+                sys.stdout.flush()
+                app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
         else:
-            app.run(host='0.0.0.0', port=port, debug=debug)
+            print(f"Starting Flask development server on 0.0.0.0:{port}...")
+            sys.stdout.flush()
+            app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
         
     except ImportError as e:
         print(f"Import error: {e}")
