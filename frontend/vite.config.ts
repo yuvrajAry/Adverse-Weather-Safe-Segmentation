@@ -20,14 +20,15 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@',
-        replacement: '.',
+        find: /^@\/(.*)/,
+        replacement: resolve(__dirname, 'client') + '/$1',
       },
       {
         find: '@shared',
         replacement: resolve(__dirname, 'shared'),
       },
     ],
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   build: {
     outDir: resolve(__dirname, 'dist/spa'),
