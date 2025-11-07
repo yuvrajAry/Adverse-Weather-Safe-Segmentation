@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
-  root: resolve(__dirname, 'client'),
+  root: resolve(__dirname),
   server: {
     port: 5173,
     fs: {
@@ -18,9 +18,21 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, 'client'),
-      '@shared': resolve(__dirname, 'shared'),
+    alias: [
+      {
+        find: '@',
+        replacement: resolve(__dirname, 'client'),
+      },
+      {
+        find: '@shared',
+        replacement: resolve(__dirname, 'shared'),
+      },
+    ],
+  },
+  build: {
+    outDir: 'dist/spa',
+    rollupOptions: {
+      input: resolve(__dirname, 'client/index.html'),
     },
   },
 })
