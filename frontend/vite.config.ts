@@ -18,16 +18,10 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: [
-      {
-        find: /^@\/(.*)/,
-        replacement: resolve(__dirname, 'client') + '/$1',
-      },
-      {
-        find: '@shared',
-        replacement: resolve(__dirname, 'shared'),
-      },
-    ],
+    alias: {
+      '@': resolve(__dirname, 'client'),
+      '@shared': resolve(__dirname, 'shared'),
+    },
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   build: {
