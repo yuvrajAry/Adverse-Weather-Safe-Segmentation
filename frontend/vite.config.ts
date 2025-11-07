@@ -9,11 +9,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [
     react(),
-    tsconfigPaths(), // Automatically reads tsconfig.json paths
+    tsconfigPaths({
+      root: __dirname, // Match tsconfig baseUrl
+    }),
   ],
-  root: path.resolve(__dirname, 'client'),
+  root: __dirname, // Root is frontend directory (matches tsconfig baseUrl)
   build: {
     outDir: path.resolve(__dirname, 'dist/spa'),
     emptyOutDir: true,
+    rollupOptions: {
+      input: path.resolve(__dirname, 'client/index.html'),
+    },
   },
 })
