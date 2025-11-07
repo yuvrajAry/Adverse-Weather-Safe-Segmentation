@@ -12,11 +12,12 @@ This guide will help you deploy the IDDAW project with the backend on Render and
 
 ### Step 1: Prepare Your Repository
 
-Ensure your code is pushed to GitHub with the following files in the `full4` directory:
+Ensure your code is pushed to GitHub with the following files in the `project` directory:
 - `render.yaml` ✓ (created)
-- `requirements.txt` ✓ (exists)
+- `requirements_backend.txt` ✓ (exists)
 - `Procfile` ✓ (created)
-- `app/main.py` ✓ (exists)
+- `backend_api.py` ✓ (exists)
+- `start_backend.py` ✓ (exists)
 
 ### Step 2: Deploy to Render
 
@@ -31,10 +32,10 @@ Ensure your code is pushed to GitHub with the following files in the `full4` dir
    - **Name**: `iddaw-backend` (or your preferred name)
    - **Region**: Choose closest to your users
    - **Branch**: `main` (or your default branch)
-   - **Root Directory**: `full4`
+   - **Root Directory**: `project`
    - **Runtime**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Build Command**: `pip install -r requirements_backend.txt`
+   - **Start Command**: `python start_backend.py`
 
 4. **Environment Variables** (Optional):
    - `PYTHON_VERSION`: `3.11.0`
@@ -105,15 +106,14 @@ Ensure your code includes the frontend directory with:
 
 After deploying the frontend, update your backend CORS settings:
 
-1. In `full4/app/main.py`, update the CORS middleware if needed:
+1. In `project/backend_api.py`, update the CORS configuration if needed:
    ```python
-   app.add_middleware(
-       CORSMiddleware,
-       allow_origins=["https://your-app.vercel.app"],  # Add your Vercel URL
-       allow_credentials=True,
-       allow_methods=["*"],
-       allow_headers=["*"],
-   )
+   CORS(app, resources={
+       r"/api/*": {
+           "origins": ["https://your-app.vercel.app"],  # Add your Vercel URL
+           "supports_credentials": True
+       }
+   })
    ```
 
 2. Redeploy the backend on Render
@@ -142,8 +142,9 @@ To disable auto-deploy, configure it in the respective dashboard settings.
 
 1. **Service won't start**:
    - Check build logs in Render dashboard
-   - Verify `requirements.txt` dependencies
-   - Ensure Python version is compatible
+   - Verify `requirements_backend.txt` dependencies
+   - Ensure Python version is compatible (3.8+)
+   - Check if model checkpoint files exist in `ckpts/` folder
 
 2. **Memory issues**:
    - PyTorch models are memory-intensive

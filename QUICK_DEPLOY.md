@@ -15,9 +15,9 @@
    - Select your repository
    - Configure:
      - **Name**: `iddaw-backend`
-     - **Root Directory**: `full4`
-     - **Build Command**: `pip install -r requirements.txt`
-     - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+     - **Root Directory**: `project`
+     - **Build Command**: `pip install -r requirements_backend.txt`
+     - **Start Command**: `python start_backend.py`
    - Click "Create Web Service"
    - **Copy the deployed URL** (e.g., `https://iddaw-backend.onrender.com`)
 
@@ -55,19 +55,15 @@
 
 ## 🔄 Update CORS (If Needed)
 
-If you get CORS errors, update `full4/app/main.py`:
+If you get CORS errors, update `project/backend_api.py` (find the CORS section and add your Vercel URL):
 
 ```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "*",  # Or specify your Vercel URL
-        "https://your-app.vercel.app"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["*", "https://your-app.vercel.app"],
+        "supports_credentials": True
+    }
+})
 ```
 
 Then push to GitHub - Render will auto-redeploy.

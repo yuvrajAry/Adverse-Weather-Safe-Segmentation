@@ -38,7 +38,10 @@ if __name__ == '__main__':
         print("  GET  /api/results/<id> - Get specific result")
         print("=" * 50)
         
-        app.run(host='0.0.0.0', port=8001, debug=True)
+        # Get port from environment or default to 8001
+        port = int(os.environ.get('PORT', 8001))
+        debug = os.environ.get('FLASK_ENV', 'development') == 'development'
+        app.run(host='0.0.0.0', port=port, debug=debug)
         
     except ImportError as e:
         print(f"Import error: {e}")

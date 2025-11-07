@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# Database
+iddaw.db
+*.sqlite
+*.sqlite3
+
+# Model Checkpoints
+ckpts/*.pth
+ckpts/*.pt
+*.pth
+*.pt
+
+# Uploads and outputs
+uploads/
+output/
+outputs/
+results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

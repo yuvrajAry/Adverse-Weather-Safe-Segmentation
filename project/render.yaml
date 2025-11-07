@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: iddaw-backend
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: project
+    buildCommand: pip install -r requirements_backend.txt
+    startCommand: python start_backend.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 8001
