@@ -51,15 +51,33 @@ class ModelManager:
             self.model = build_model('mid_mbv3', num_classes=num_classes)
             if os.path.exists(self.model_path):
                 checkpoint = torch.load(self.model_path, map_location=self.device)
-                self.model.load_state_dict(checkpoint['model_state_dict'])
+                
+                # Handle different checkpoint formats
+                if isinstance(checkpoint, dict):
+                    if 'model_state_dict' in checkpoint:
+                        state_dict = checkpoint['model_state_dict']
+                    elif 'state_dict' in checkpoint:
+                        state_dict = checkpoint['state_dict']
+                    elif 'model' in checkpoint:
+                        state_dict = checkpoint['model']
+                    else:
+                        # Assume the checkpoint is the state dict itself
+                        state_dict = checkpoint
+                else:
+                    state_dict = checkpoint
+                
+                self.model.load_state_dict(state_dict)
                 self.model.to(self.device)
                 self.model.eval()
-                print(f"Model loaded successfully from {self.model_path}")
-                print(f"Model architecture: mid_mbv3, Classes: {num_classes}")
+                print(f"✓ Model loaded successfully from {self.model_path}")
+                print(f"✓ Model architecture: mid_mbv3, Classes: {num_classes}, Device: {self.device}")
             else:
-                print(f"Warning: Model checkpoint not found at {self.model_path}")
+                print(f"⚠ Warning: Model checkpoint not found at {self.model_path}")
+                print(f"⚠ Model predictions will not be available")
         except Exception as e:
-            print(f"Error loading model: {str(e)}")
+            print(f"✗ Error loading model: {str(e)}")
+            print(f"✗ Checkpoint keys: {checkpoint.keys() if isinstance(checkpoint, dict) else 'Not a dict'}")
+            print(f"⚠ Continuing without model - authentication will still work")
             self.model = None
 
     def predict(self, image):
