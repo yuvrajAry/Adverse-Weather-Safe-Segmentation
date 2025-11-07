@@ -1,29 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve, dirname } from 'path'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import path from 'path'
 import { fileURLToPath } from 'url'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [react()],
-  root: resolve(__dirname),
-  publicDir: resolve(__dirname, 'client/public'),
-  server: {
-    port: 5173,
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'client'),
-      '@shared': resolve(__dirname, 'shared'),
-    },
-    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
-  },
+  plugins: [
+    react(),
+    tsconfigPaths(), // Automatically reads tsconfig.json paths
+  ],
+  root: path.resolve(__dirname, 'client'),
   build: {
-    outDir: resolve(__dirname, 'dist/spa'),
+    outDir: path.resolve(__dirname, 'dist/spa'),
     emptyOutDir: true,
-    rollupOptions: {
-      input: resolve(__dirname, 'client/index.html'),
-    },
   },
 })
