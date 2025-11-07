@@ -21,7 +21,7 @@ export default defineConfig({
     alias: [
       {
         find: '@',
-        replacement: resolve(__dirname, 'client'),
+        replacement: '.',
       },
       {
         find: '@shared',
@@ -31,5 +31,6 @@ export default defineConfig({
   },
   build: {
     outDir: resolve(__dirname, 'dist/spa'),
+    emptyOutDir: true,
   },
 })
